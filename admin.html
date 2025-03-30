@@ -1,0 +1,182 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Admin Panel - Auditorium Bookings</title>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/html2canvas/1.4.1/html2canvas.min.js"></script>
+    <style>
+        body { font-family: Arial, sans-serif; padding: 20px; text-align: center; background-color: #f8f9fa; }
+        table { width: 100%; border-collapse: collapse; margin-top: 20px; display: none; background: white; }
+        th, td { border: 1px solid #ddd; padding: 10px; text-align: left; cursor: pointer; }
+        th { background-color: #007bff; color: white; }
+        .btn { padding: 5px 10px; cursor: pointer; border-radius: 4px; border: none; color: white; margin: 2px; }
+        .edit-btn { background-color: #ffc107; }
+        .delete-btn { background-color: #dc3545; }
+        .screenshot-btn { background-color: #28a745; }
+        .search-box { margin-bottom: 20px; padding: 8px; width: 300px; display: none; }
+        #password-section { margin-bottom: 20px; }
+    </style>
+</head>
+<body>
+    <h2>Admin Panel - Auditorium Bookings</h2>
+
+    <div id="password-section">
+        <input type="password" id="adminPassword" placeholder="Enter Admin Password">
+        <button onclick="authenticateAdmin()">Submit</button>
+    </div>
+
+    <input type="text" id="search" class="search-box" placeholder="Search by Event Title, Date, Time, or Email" onkeyup="searchBooking()">
+
+    <table id="adminTable">
+        <thead>
+            <tr>
+                <th>Email ID</th>
+                <th>Event Title</th>
+                <th onclick="sortBookings()">Event Date &#x25B2;&#x25BC;</th>
+                <th>Start Time</th>
+                <th>End Time</th>
+                <th>Event Coordinator</th>
+                <th>Department</th>
+                <th>Mobile Number (Event Coordinator)</th>
+                <th>Peon Name</th>
+                <th>Cleaning Remark</th>
+                <th>Actions</th>
+            </tr>
+        </thead>
+        <tbody id="booking-list"></tbody>
+    </table>
+
+    <script>
+        let bookings = JSON.parse(localStorage.getItem("bookings")) || [];
+        const adminPassword = "admin123";
+        let sortAscending = true;
+
+        function authenticateAdmin() {
+            const enteredPassword = document.getElementById("adminPassword").value;
+            if (enteredPassword === adminPassword) {
+                document.getElementById("password-section").style.display = "none";
+                document.getElementById("adminTable").style.display = "table";
+                document.getElementById("search").style.display = "block";
+                fetchBookings();
+            } else {
+                alert("Incorrect password. Access denied.");
+            }
+        }
+
+        function fetchBookings() {
+            bookings = JSON.parse(localStorage.getItem("bookings")) || [];
+            renderBookings();
+        }
+
+        function renderBookings(filteredBookings = bookings) {
+            let tableBody = document.getElementById("booking-list");
+            tableBody.innerHTML = "";
+            filteredBookings.forEach((booking, index) => {
+                let row = `<tr id="booking-${index}">
+                    <td>${booking.email}</td>
+                    <td>${booking.eventTitle}</td>
+                    <td>${booking.eventDate}</td>
+                    <td>${formatTime(booking.startTime)}</td>
+                    <td>${formatTime(booking.endTime)}</td>
+                    <td>${booking.eventCoordinator || "N/A"}</td>
+                    <td>${booking.department}</td> 
+                    <td>${booking.mobileNumber}</td>
+                    <td>${booking.peon}</td>
+                    <td>${booking.cleaningRemark}</td>
+                    <td>
+                        <button class="btn edit-btn" onclick="editBooking(${index})">Edit</button>
+                        <button class="btn delete-btn" onclick="deleteBooking(${index})">Delete</button>
+                        <button class="btn screenshot-btn" onclick="captureScreenshot(${index})">Capture</button>
+                    </td>
+                </tr>`;
+                tableBody.innerHTML += row;
+            });
+        }
+
+          
+            function searchBooking() {
+            let searchValue = document.getElementById("search").value.toLowerCase();
+            let filteredBookings = bookings.filter(b =>
+                b.eventTitle.toLowerCase().includes(searchValue) ||
+                b.eventDate.toLowerCase().includes(searchValue) ||
+                formatTime(b.startTime).toLowerCase().includes(searchValue) ||
+                formatTime(b.endTime).toLowerCase().includes(searchValue) ||
+                b.email.toLowerCase().includes(searchValue) ||
+                (b.eventCoordinator && b.eventCoordinator.toLowerCase().includes(searchValue))||
+                b.department.toLowerCase().include(searchValue)||
+                b.mobileNumber.toLowerCase().include(searchValue)||
+                b.peon.toLowerCase().includes(searchValue)||
+                b.cleaningRemark.toLowerCase().includes(searchValue)
+            );
+            renderBookings(filteredBookings);
+        }
+
+        function deleteBooking(index) {
+            if (confirm("Are you sure you want to delete this booking?")) {
+                bookings.splice(index, 1);
+                localStorage.setItem("bookings", JSON.stringify(bookings));
+                renderBookings();
+            }
+        }
+
+        function editBooking(index) {
+            let booking = bookings[index];
+            let newTitle = prompt("Enter new event title:", booking.eventTitle);
+            let newStartTime = prompt("Enter new start time (hh:mm AM/PM):", booking.startTime);
+            let newEndTime = prompt("Enter new end time (hh:mm AM/PM):", booking.endTime);
+            let newCoordinator = prompt("Enter new event coordinator:", booking.eventCoordinator);
+            let newdepartment = prompt("Enter new event department:", booking.department);
+            let newmobileNumber = prompt("Enter new event MobileNumber:", booking.mobileNumber);
+            let newpeon = prompt("Enter new event Peon:", booking.peon);
+            let newcleaningRemark = prompt("Enter new CleaningRemark:", booking.cleaningRemark);
+
+            if (newTitle) booking.eventTitle = newTitle;
+            if (newStartTime) booking.startTime = newStartTime;
+            if (newEndTime) booking.endTime = newEndTime;
+            if (newCoordinator) booking.eventCoordinator = newCoordinator;
+            if (newdepartment) booking.eventdepartment = newdepartment;
+            if (newmobileNumber) booking.mobileNumber = newmobileNumber;
+            if (newpeon) booking.peon = newpeon;
+            if (newcleaningRemark) booking.cleaningRemark = newcleaningRemark;
+
+
+
+            localStorage.setItem("bookings", JSON.stringify(bookings));
+            fetchBookings();
+        }
+
+              function captureScreenshot(index) {
+            let bookingRow = document.getElementById(`booking-${index}`);
+        
+            
+            html2canvas(bookingRow).then(canvas => {
+                let imageData = canvas.toDataURL("image/png");
+        
+                let screenshots = JSON.parse(localStorage.getItem("screenshots")) || {};
+                screenshots[bookings[index].email] = imageData; // Store screenshot using email as key
+                localStorage.setItem("screenshots", JSON.stringify(screenshots));
+        
+                alert("Screenshot saved successfully!");
+        
+                // Show the screenshot in a new window
+                let imageWindow = window.open("");
+                imageWindow.document.write(`<h3>Captured Screenshot</h3>`);
+                imageWindow.document.write(`<img src="${imageData}" style="width:100%;">`);
+            });
+        }
+
+
+        function sortBookings() {
+            bookings.sort((a, b) => new Date(a.eventDate) - new Date(b.eventDate));
+            if (!sortAscending) bookings.reverse();
+            sortAscending = !sortAscending;
+            renderBookings();
+        }
+
+        function formatTime(time) {
+            return time || "N/A";
+        }
+    </script>
+</body>
+</html>

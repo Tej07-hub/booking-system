@@ -1,0 +1,215 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Feedback Form with Admin Delete</title>
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            background-color: #f4f4f4;
+            margin: 0;
+            padding: 0;
+        }
+        .container {
+            width: 80%;
+            margin: 0 auto;
+            padding: 20px;
+            background-color: #fff;
+            border-radius: 8px;
+            box-shadow: 0 2px 10px rgba(0, 0, 0, 0.1);
+            margin-top: 50px;
+        }
+        h1 {
+            text-align: center;
+            color: #333;
+        }
+        .feedback-panel {
+            background-color: #f9f9f9;
+            border: 1px solid #ddd;
+            border-radius: 8px;
+            margin-bottom: 20px;
+            padding: 15px;
+            box-shadow: 0 2px 8px rgba(0, 0, 0, 0.1);
+        }
+        .feedback-panel p {
+            font-size: 16px;
+            line-height: 1.6;
+            color: #555;
+        }
+        .feedback-panel span {
+            font-size: 14px;
+            color: #888;
+            display: block;
+            margin-top: 10px;
+        }
+        .delete-btn {
+            background-color: #f44336;
+            color: white;
+            border: none;
+            padding: 5px 10px;
+            cursor: pointer;
+            font-size: 14px;
+            border-radius: 4px;
+        }
+        .delete-btn:hover {
+            background-color: #e53935;
+        }
+        textarea {
+            width: 100%;
+            padding: 10px;
+            font-size: 14px;
+            margin-top: 10px;
+            border-radius: 4px;
+            border: 1px solid #ddd;
+            resize: vertical;
+        }
+        button {
+            padding: 10px 20px;
+            background-color: #4CAF50;
+            color: white;
+            border: none;
+            border-radius: 4px;
+            cursor: pointer;
+            font-size: 16px;
+        }
+        button:hover {
+            background-color: #45a049;
+        }
+        #adminLogin {
+            display: block;
+            text-align: center;
+            margin-bottom: 20px;
+        }
+        .admin-section {
+            display: none;
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <h1>Submit Your Feedback</h1>
+
+        <!-- Admin Login Section -->
+        <div id="adminLogin">
+            <label for="adminPassword">Enter Admin Password to Delete Feedback:</label><br>
+            <input type="password" id="adminPassword" placeholder="Admin Password">
+            <button onclick="authenticateAdmin()">Login</button>
+            <span id="adminMessage" style="color: red;"></span>
+        </div>
+
+        <!-- Feedback Form (Visible to everyone) -->
+        <textarea id="feedback" rows="4" placeholder="Enter your feedback..." required></textarea><br><br>
+        <button onclick="submitFeedback()">Submit Feedback</button>
+
+        <h2>Feedback from Users</h2>
+        <div id="feedbackPanel"></div>
+
+        <!-- Admin Section for Deleting Feedback -->
+        <div id="adminSection" class="admin-section">
+            <h2>Admin: Manage Feedback</h2>
+            <div id="adminFeedbackPanel"></div>
+        </div>
+    </div>
+
+    <script>
+        // Admin password (this can be changed to any password you prefer)
+        const adminPassword = 'admin123';
+
+        // Initialize an empty array to store feedbacks
+        let feedbacks = JSON.parse(localStorage.getItem('feedbacks')) || [];
+
+        // Function to authenticate admin login
+        function authenticateAdmin() {
+            const passwordInput = document.getElementById('adminPassword').value;
+            const adminMessage = document.getElementById('adminMessage');
+
+            if (passwordInput === adminPassword) {
+                document.getElementById('adminLogin').style.display = 'none';
+                document.getElementById('adminSection').style.display = 'block';
+                adminMessage.textContent = '';
+                displayAdminFeedbacks();
+            } else {
+                adminMessage.textContent = 'Invalid password. Please try again.';
+            }
+        }
+
+        // Function to display feedbacks (visible to all users)
+        function displayFeedbacks() {
+            const feedbackPanel = document.getElementById('feedbackPanel');
+            feedbackPanel.innerHTML = '';
+
+            feedbacks.forEach(feedback => {
+                const feedbackDiv = document.createElement('div');
+                feedbackDiv.classList.add('feedback-panel');
+                feedbackDiv.innerHTML = `
+                    <p>${feedback.text}</p>
+                    <span>Submitted at: ${feedback.timestamp}</span>
+                `;
+                feedbackPanel.appendChild(feedbackDiv);
+            });
+        }
+
+        // Function to display feedbacks for admin (with delete buttons)
+        function displayAdminFeedbacks() {
+            const adminFeedbackPanel = document.getElementById('adminFeedbackPanel');
+            adminFeedbackPanel.innerHTML = '';
+
+            feedbacks.forEach((feedback, index) => {
+                const feedbackDiv = document.createElement('div');
+                feedbackDiv.classList.add('feedback-panel');
+                feedbackDiv.innerHTML = `
+                    <p>${feedback.text}</p>
+                    <span>Submitted at: ${feedback.timestamp}</span>
+                    <button class="delete-btn" onclick="deleteFeedback(${index})">Delete</button>
+                `;
+                adminFeedbackPanel.appendChild(feedbackDiv);
+            });
+        }
+
+        // Function to handle feedback submission
+        function submitFeedback() {
+            const feedbackText = document.getElementById('feedback').value;
+            if (feedbackText.trim() !== '') {
+                const timestamp = new Date().toLocaleString();
+                const newFeedback = {
+                    text: feedbackText,
+                    timestamp: timestamp
+                };
+
+                // Add the new feedback to the array
+                feedbacks.push(newFeedback);
+
+                // Save feedbacks to localStorage
+                localStorage.setItem('feedbacks', JSON.stringify(feedbacks));
+
+                // Clear the feedback textarea
+                document.getElementById('feedback').value = '';
+
+                // Re-display the feedbacks
+                displayFeedbacks();
+            } else {
+                alert("Please enter feedback.");
+            }
+        }
+
+        // Function to delete feedback (admin only)
+        function deleteFeedback(index) {
+            // Remove the feedback from the array
+            feedbacks.splice(index, 1);
+
+            // Save the updated feedbacks to localStorage
+            localStorage.setItem('feedbacks', JSON.stringify(feedbacks));
+
+            // Re-display the feedbacks for admin
+            displayAdminFeedbacks();
+            displayFeedbacks();
+        }
+
+        // Display feedbacks when the page loads
+        window.onload = function() {
+            displayFeedbacks();
+        };
+    </script>
+</body>
+</html>
