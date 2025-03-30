@@ -1,0 +1,307 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Sliding Photo Gallery & Auditorium Booking</title>
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/swiper@11/swiper-bundle.min.css">
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            margin: 0;
+            padding: 0;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            background-color: #f0f0f0;
+        }
+
+        /* Top Bar */
+        .top-bar {
+            width: 100%;
+            padding: 5px 15px;
+            font-size: 14px;
+            background-color: #00246b;
+            color: #ffffff;
+            position: fixed;
+            top: 0;
+            left: 0;
+            z-index: 1001;
+            font-weight: bold;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+        }
+
+        .top-bar .left {
+            display: flex;
+            align-items: center;
+        }
+
+        .top-bar .left p {
+            margin: 0 10px;
+        }
+
+        .top-bar .right {
+            text-align: right;
+        }
+
+        /* Header */
+        .header {
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            padding: 15px;
+            font-size: 18px;
+            font-weight: bold;
+            background-color: #ffffff;
+            color: rgb(0, 0, 0);
+            width: 100%;
+            position: fixed;
+            top: 30px;
+            left: 0;
+            z-index: 1000;
+            transition: top 0.3s ease-in-out;
+        }
+
+        .header img {
+            height: 100px;
+            margin-left: 10px;
+        }
+
+        .header-text {
+            text-align: center;
+            flex-grow: 1;
+        }
+
+        .admin-button {
+            background-color: #00246b;
+            color: white;
+            border: none;
+            padding: 10px 14px;
+            font-size: 14px;
+            border-radius: 10px;
+            cursor: pointer;
+            transition: background-color 0.3s;
+            margin-right: 25px;
+        }
+
+        .admin-button:hover {
+            background-color: #001b4f;
+        }
+
+        .swiper {
+            width: 80%;
+            max-width: 800px;
+            margin-top: 120px;
+        }
+
+        .swiper-slide img {
+            width: 100%;
+            border-radius: 10px;
+        }
+
+        .button-container {
+            margin-top: 20px;
+            text-align: center;
+            position: relative;
+            z-index: 10;
+        }
+
+        .click-button {
+            background-color: #00246b;
+            color: white;
+            border: none;
+            padding: 12px 24px;
+            font-size: 18px;
+            border-radius: 5px;
+            cursor: pointer;
+            transition: background-color 0.3s;
+        }
+
+        .click-button:hover {
+            background-color: #001b4f;
+        }
+
+        .floating-button {
+            position: fixed;
+            right: 20px;
+            top: 50%;
+            transform: translateY(-50%);
+            width: 50px;
+            height: 50px;
+            background-color: #00246b;
+            color: white;
+            border: none;
+            border-radius: 10px;
+            cursor: pointer;
+            font-size: 14px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            box-shadow: 0px 4px 6px rgba(0, 0, 0, 0.2);
+            transition: background-color 0.3s, transform 0.2s;
+            z-index: 1000;
+            text-decoration: none;
+        }
+
+        .floating-button img {
+            width: 80%;
+            height: 80%;
+            object-fit: contain;
+        }
+
+        .floating-button:hover {
+            background-color: #001b4f;
+            transform: translateY(-50%) scale(1.1);
+        }
+
+        .floating-button-left {
+            position: fixed;
+            left: 20px;
+            top: 50%;
+            transform: translateY(-50%);
+            width: 50px;
+            height: 50px;
+            background-color: #00246b;
+            color: white;
+            border: none;
+            border-radius: 10px;
+            cursor: pointer;
+            font-size: 14px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            box-shadow: 0px 4px 6px rgba(0, 0, 0, 0.2);
+            transition: background-color 0.3s, transform 0.2s;
+            z-index: 1000;
+            text-decoration: none;
+        }
+
+        .floating-button-left img {
+            width: 75%;
+            height: 75%;
+            object-fit: contain;
+        }
+
+        .floating-button-left:hover {
+            background-color: #001b4f;
+            transform: translateY(-50%) scale(1.1);
+        }
+    </style>
+</head>
+<body>
+    <div class="top-bar" id="datetime">
+        <div class="left">
+            <p>Email: info@snjb.org</p>
+            <p>Call: +91-123-456-7890</p>
+        </div>
+        <div class="right" id="datetime"></div> <!-- Date, Day and Time on the right -->
+    </div>
+
+    <div class="header" id="header">
+        <img src="https://www.snjb.org/arts-com-sci-college/visitors/layout_1/design/images/logo-left.png" alt="SNJB Logo">
+        <div class="header-text">
+            <strong>SNJB's</strong><br>
+            <strong>Late Sau. Kantabai Bhavarlalji Jain College of Engineering</strong><br>
+            <span style='font-size: 14px; font-weight: normal;'>
+                Accredited with A+ Grade By NAAC<br>
+                Accredited By NBA (Civil, Comp, E&TC And Mech Engg)<br>
+                An Autonomous Institute affiliated to Savitribai Phule Pune University
+            </span>
+        </div>
+        <button class="admin-button" onclick="redirectToAdmin()">Admin Panel</button>
+    </div>
+
+    <a href="/feedback.html" class="floating-button">
+        <img src="https://cdn.iconscout.com/icon/premium/png-512-thumb/customer-feedback-13-886859.png" alt="Feedback">
+    </a>
+
+    <a href="https://snjb.org/engineering/" class="floating-button-left">
+        <img src="https://www.snjb.org/arts-com-sci-college/visitors/layout_1/design/images/logo-left.png" alt="SNJB MAIN">
+    </a>
+
+   <div class="swiper mySwiper">
+        <div class="swiper-wrapper">
+            <div class="swiper-slide"><img src="https://images.collegedunia.com/public/college_data/images/campusimage/1419224474snjb6.JPG?mode=stretch" alt="Slide 1"></div>
+            <div class="swiper-slide"><img src="https://img.jagranjosh.com/images/2024/April/1542024/Auditorium%20of%20SNJBs%20Late%20Sau%20Kantabai%20Bhavarlalji%20Jain%20College%20of%20Engineering%20Nashik_Auditorium.jpg" alt="Slide 2"></div>
+            <div class="swiper-slide"><img src="https://images.collegedunia.com/public/college_data/images/campusimage/1660648808SeminarHall-2.jpg?mode=stretch" alt="Slide 3"></div>
+            <div class="swiper-slide"><img src="https://images.collegedunia.com/public/college_data/images/campusimage/1419224519snjb4.JPG?mode=stretch" alt="Slide 4"></div>
+        </div>
+        <div class="swiper-pagination"></div>
+        <div class="swiper-button-next"></div>
+        <div class="swiper-button-prev"></div>
+    </div>
+
+    <div class="button-container">
+        <h1>Book The Auditorium</h1>
+        <button class="click-button" onclick="redirectToBooking()">Click Here</button>
+    </div>
+
+    <div class="instructions">
+        <p><strong>Instructions:</strong></p>
+        <p>1. Follow the instructions strictly mentioned in the blog.</p>
+        <p>2. Make an entry against the Media box & Keys of the auditorium before the event starts.</p>
+        <p>3. A laptop should be available in the Auditorium Hall.</p>
+        <p>4. Cleaning should be done before and after each event.</p>
+        <p>5. Click "Next" to proceed with booking after reading the instructions.</p>
+        <p>6. Maximum seating capacity is 161 students.</p>
+    </div>
+
+    <script src="https://cdn.jsdelivr.net/npm/swiper@11/swiper-bundle.min.js"></script>
+    <script>
+        function updateDateTime() {
+            const now = new Date();
+            const dayNames = ["Sunday", "Monday", "Tuesday", "Wednesday", "Thursday", "Friday", "Saturday"];
+            const day = dayNames[now.getDay()];
+            const date = now.getDate();
+            const month = now.getMonth() + 1;
+            const year = now.getFullYear();
+            const hours = now.getHours();
+            const minutes = now.getMinutes();
+            const seconds = now.getSeconds();
+
+            const timeString = `${day}, ${date}/${month}/${year} ${hours}:${minutes}:${seconds}`;
+            document.getElementById("datetime").innerText = timeString;
+        }
+        setInterval(updateDateTime, 1000);
+        updateDateTime();
+
+        function redirectToAdmin() {
+            window.location.href = "admin.html";
+        }
+        function redirectToBooking() {
+            window.location.href = "bookingpage.html";
+        }
+
+        var swiper = new Swiper(".mySwiper", {
+            loop: true,
+            autoplay: {
+                delay: 3000,
+                disableOnInteraction: false,
+            },
+            pagination: {
+                el: ".swiper-pagination",
+                clickable: true,
+            },
+            navigation: {
+                nextEl: ".swiper-button-next",
+                prevEl: ".swiper-button-prev",
+            },
+        });
+
+        let lastScrollTop = 0;
+        const header = document.getElementById("header");
+
+        window.addEventListener("scroll", function() {
+            let scrollTop = window.pageYOffset || document.documentElement.scrollTop;
+            if (scrollTop > lastScrollTop) {
+                header.style.top = "-100px"; // Hide header
+            } else {
+                header.style.top = "30px"; // Show header
+            }
+            lastScrollTop = scrollTop;
+        });
+    </script>
+</body>
+</html>
